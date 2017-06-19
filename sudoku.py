@@ -1,11 +1,19 @@
-#Sudoku -Kryštof Kořínek 2017
+#SudokuSolver1.0 -Kryštof Kořínek 2017
+
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 
 class Sudoku:
-	def __init__(self, file = None):
+	def __init__(self, file = None, log = False):
+		self.log = log
+		if log:
+			self.old_stdout = sys.stdout
+			self.log_file = open("message.log","w")
+			sys.stdout = self.log_file
+
 		if file != None:
 			try:
 				self.fileData = file.read()
@@ -15,6 +23,13 @@ class Sudoku:
 
 		else:
 			print("No file was loaded. Please load a file[path]")
+
+
+	def __del__(self):
+		if self.log:
+			sys.stdout = self.old_stdout
+
+			self.log_file.close()
 		
 
 
@@ -66,9 +81,9 @@ class Sudoku:
 		sqr = index%3
 		print("Checking square line",line,"square",sqr)
 		if number in self.sudoMap[line,sqr]:
-			return True
-		else:
 			return False
+		else:
+			return True
 
 
 	def checkCol(self, number, index):
@@ -76,9 +91,9 @@ class Sudoku:
 		col = index%3
 		print("Checking column", index)
 		if number in self.sudoMap[:,sqr,:,col]:
-			return True
-		else:
 			return False
+		else:
+			return True
 
 
 	def checkRow(self, number, index):
@@ -86,9 +101,74 @@ class Sudoku:
 		line = index%3
 		print("Checking row", index)
 		if number in self.sudoMap[Sline,:,line,:]:
-			return True
-		else:
 			return False
+		else:
+			return True
+
+
+	def checkMap(self, times = 1):
+		for rnd in range(times):
+			col = 0
+			row = 0
+			sqr = 0
+			posibs = []
+			for number in range(81):
+
+				print("Number index: ",number,"["+str(self.sudoMap.item(number))+"]")
+				print("Column:",col,"Row:",row,"Square:",sqr)
+
+				if self.sudoMap.item(number) == 0:
+					posibNums = []
+					for posib in range(1,10):
+						if self.checkSqr(posib,sqr) and self.checkRow(posib,row) and self.checkCol(posib,col):
+							posibNums.append(posib)
+					posibs.append(posibNums)
+					print("Possible numbers:",posibNums)
+
+				else:
+					posibs.append([])
+
+				if row == int(sqr/3)*3+2 and col == (sqr%3)*3+2:
+					sqr += 1
+					curIndex = 0
+					newNum = 0
+					print("All possible numbers:",posibs)
+					for posib in posibs:
+						lonely = False
+						print("Current test possibles:",posib)
+						if len(posib) == 0:
+							continue
+						else:
+							for posibNum in posib:
+								newNum = posibNum
+								for i in range(9):
+									if i == curIndex:
+										continue
+									else:
+										if posibNum in posibs[i]:
+											lonely = False
+											break
+										else:
+											lonely = True
+								if lonely:
+									self.sudoMap.itemset(curIndex*sqr, newNum)
+									print("Set number:",newNum,"["+str(curIndex*sqr)+"]")
+									break
+						curIndex += 1
+					print("End index:",curIndex)
+					posibs = []
+
+
+				if row == int(sqr/3)*3+2 and col == (sqr%3)*3+2:
+					row = int(sqr/3)*3
+				elif col == 2:
+					row += 1
+
+				if col == (sqr%3)*3+2:
+					col = (sqr%3)*3
+				else:
+					col += 1
+				print("")
 
 
 	def showSudo(self):
@@ -96,6 +176,8 @@ class Sudoku:
 
 
 file = open("sudoku.txt")
-x = Sudoku(file)
+x = Sudoku(file, False)
 x.formData()
-print(x.checkRow(5,8))
+x.checkMap()
+print(x.sudoMap)
+
