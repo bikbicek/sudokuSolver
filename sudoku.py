@@ -110,11 +110,13 @@ class Sudoku:
 			col = 0
 			row = 0
 			sqr = 0
+			lastSqr = sqr
 			posibs = []
 			for number in range(81):
 
 				print("Number index: ",number,"["+str(self.sudoMap.item(number))+"]")
 				print("Column:",col,"Row:",row,"Square:",sqr)
+				print("Max column:",int(sqr%3)*3+2,"Max row:",int(sqr/3)*3+2)
 
 				if self.sudoMap.item(number) == 0:
 					posibNums = []
@@ -127,6 +129,7 @@ class Sudoku:
 				else:
 					posibs.append([])
 
+				changeSqr = False
 				if row == int(sqr/3)*3+2 and col == (sqr%3)*3+2:
 					sqr += 1
 					curIndex = 0
@@ -136,6 +139,7 @@ class Sudoku:
 						lonely = False
 						print("Current test possibles:",posib)
 						if len(posib) == 0:
+							curIndex += 1
 							continue
 						else:
 							for posibNum in posib:
@@ -150,23 +154,25 @@ class Sudoku:
 										else:
 											lonely = True
 								if lonely:
-									self.sudoMap.itemset(curIndex*sqr, newNum)
-									print("Set number:",newNum,"["+str(curIndex*sqr)+"]")
+									self.sudoMap[int(lastSqr/3),lastSqr%3,int(curIndex/3),curIndex%3] = newNum
+									print("Set number:",newNum)
 									break
 						curIndex += 1
 					print("End index:",curIndex)
+					print(self.sudoMap[int(lastSqr/3),lastSqr%3])
 					posibs = []
 
 
-				if row == int(sqr/3)*3+2 and col == (sqr%3)*3+2:
+				if row == int(lastSqr/3)*3+2 and col == (lastSqr%3)*3+2:
 					row = int(sqr/3)*3
-				elif col == 2:
+				elif col == (sqr%3)*3+2:
 					row += 1
 
-				if col == (sqr%3)*3+2:
+				if col == (lastSqr%3)*3+2:
 					col = (sqr%3)*3
 				else:
 					col += 1
+				lastSqr = sqr
 				print("")
 
 
@@ -175,8 +181,8 @@ class Sudoku:
 
 
 file = open("sudoku.txt")
-x = Sudoku(file, False)
+x = Sudoku(file, True)
 x.formData()
-x.checkMap()
+x.checkMap(2)
 print(x.sudoMap)
 
