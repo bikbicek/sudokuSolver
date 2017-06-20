@@ -75,6 +75,10 @@ class Sudoku:
 		return True
 
 
+	def containsZero(self):
+		return 0 in self.sudoMap
+
+
 	def checkSqr(self, number, index):
 		line = int(index/3)
 		sqr = index%3
@@ -183,6 +187,17 @@ class Sudoku:
 file = open("sudoku.txt")
 x = Sudoku(file, True)
 x.formData()
-x.checkMap(2)
-print(x.sudoMap)
+while x.containsZero():
+	lastMap = x.sudoMap.copy()
+	x.checkMap()
 
+for i in range(9):
+	string = ""
+	ls = x.sudoMap[int(i/3),:,i%3,:].copy()
+	for number in range(9):
+		string += str(ls.item(number))
+	print(string)
+
+print("")
+
+print(x.sudoMap)
